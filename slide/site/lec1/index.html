@@ -4,12 +4,12 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
 
-    <title>组内汇报</title>
+    <title>MVG 理论基础 & SFM 代码复现</title>
     <link rel="shortcut icon" href="./favicon.ico" />
     <link rel="stylesheet" href="./dist/reset.css" />
     <link rel="stylesheet" href="./dist/reveal.css" />
     <link rel="stylesheet" href="./dist/theme/simple.css" id="theme" />
-    <link rel="stylesheet" href="./css/highlight/github.css" />
+    <link rel="stylesheet" href="./css/highlight/monokai-sublime.css" />
 
     <link rel="stylesheet" href="./assets/custom.css" />
     <link rel="stylesheet" href="./assets/dark.css" />
@@ -19,31 +19,63 @@
     <div class="reveal">
       <div class="slides"><section  data-markdown><script type="text/template">
 
-<style>
-.reveal .slides {
-    border: none;
-}
-.reveal .slide-number {
-    display: none;
-}
-.reveal h2 {
-    text-align: center;
-}
-</style>
+<!-- 
+复现一下基于SFM的代码（理论可以参考一下B站上 北京邮电大学 鲁鹏老师的三维重建的课程），然后月底的时候会进行一次汇报。汇报内容：掌握的多视图三维重建的理论基础、基于SFM的代码复现进度（如 openMVG等，第一阶段可以不需要后端优化的内容，只要能拿着几张视图可以恢复出相机的位姿以及恢复的稀疏点云即可）。
+ -->
 
-<div class="center">
 
-## 组内汇报
+<!-- .slide: data-background="lec1/cover.png" -->
 
-<div class="three-line">
+</script></section><section  data-markdown><script type="text/template">
+<!-- .slide: data-background="lec1/background.png" -->
 
-|主题|时间|课件|
-|:--|:--|:--|
-|MVG 理论基础 & SFM 代码复现|2023.10.31|[lec1](https://slides.jujimeizuo.cn/GroupMeetingReport/lec1)|
+<div class="middle center">
+<div style="width: 100%">
+
+# Part.1 MVG 理论基础
 
 
 </div>
+</div>
 
+
+</script></section><section  data-markdown><script type="text/template">
+<!-- .slide: data-background="lec1/background.png" -->
+
+<div class="middle center">
+<div style="width: 100%">
+
+# Part.2 SFM 基础内容
+
+
+</div>
+</div>
+
+</script></section><section  data-markdown><script type="text/template">
+<!-- .slide: data-background="lec1/background.png" -->
+
+<div class="middle center">
+<div style="width: 100%">
+
+# Part.3 SFM 代码复现
+
+
+</div>
+</div>
+
+</script></section><section  data-markdown><script type="text/template">
+<!-- .slide: data-background="lec1/background.png" -->
+
+<div class="middle center">
+<div style="width: 100%">
+
+# 谢谢大家
+
+<hr/>
+
+**Question?**
+
+</div>
 </div></script></section></div>
     </div>
 
@@ -88,7 +120,7 @@
       // options from URL query string
       var queryOptions = Reveal().getQueryHash() || {};
 
-      var options = extend(defaultOptions, {"transition":"slide","transitionSpeed":"fast","center":false,"slideNumber":"c/t","width":1000,"showSlideNumber":"none"}, queryOptions);
+      var options = extend(defaultOptions, {"transition":"slide","transitionSpeed":"fast","center":false,"slideNumber":"c/t","width":1000}, queryOptions);
     </script>
 
     <script src="https://cdn.jujimeizuo.cn/heti/heti.js"></script>

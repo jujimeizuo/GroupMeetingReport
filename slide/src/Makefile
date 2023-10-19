@@ -24,7 +24,7 @@ build-home:
 all:
 	@echo "Building all slides..."
 	@make build-home
-	@for i in `seq 0 -1`; do \
+	@for i in `seq 1 1`; do \
 		make LECNO=$$i build; \
 	done
 

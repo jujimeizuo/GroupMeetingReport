@@ -32,4 +32,13 @@ revealOptions:
 
 ## 组内汇报
 
+<div class="three-line">
+
+|主题|时间|课件|
+|:--|:--|:--|
+|MVG 理论基础 & SFM 代码复现|2023.10.31|[lec1](https://slides.jujimeizuo.cn/GroupMeetingReport/lec1)|
+
+
+</div>
+
 </div>
