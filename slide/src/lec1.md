@@ -292,6 +292,9 @@ $$
 - 问题
     - $x_{1j}=M_1X_j=K_1[I \ \ \ 0]X_j (j=1,...,n)$
     - $x_{2j}=M_2X_j=K_2[R \ T]X_j (j=1,...,n)$
+
+<div class="fragment">
+
 - 求解步骤
     1. 对应点计算（SIFT 特征提取 + 近邻匹配）
     2. 求解基础矩阵 F（RANSAC + 归一化八点法）
@@ -299,36 +302,44 @@ $$
     4. 分解本质矩阵 $E \to R$、$T \to M_2$
     5. 三角化
 
+</div>
 
 <!--v-->
 <!-- .slide: data-background="lec1/background.png" -->
 
 ## 基于增量法的 SFM 系统（多视图）
 
-- 求解步骤
-    1. 预处理
-        - 图像特征点提取与匹配
-        - 基于 RANSAC 的基础矩阵或单应矩阵估计
-    2. 增量法求解 SFM
+### 求解步骤
+
+<div class="fragment">
+
+1. 预处理
+    - 图像特征点提取与匹配
+    - 基于 RANSAC 的基础矩阵或单应矩阵估计
+
+</div>
+
+<div class="fragment">
+
+2. 增量法求解 SFM
+
+</div>
 
 <!--v-->
 <!-- .slide: data-background="lec1/background.png" -->
 
-
 ## 增量法
 
-
-<section class="increment">
-
-<!-- <style>
-.reveal p, .reveal li {
-    /* font-size: 20px; */
-}
-</style> -->
 
 - 输入：摄像机内参数、特征点和几何校验后的匹配结果
 - 输出：三维点云、摄像机位姿
 
+<hr/>
+
+<div class="fragment">
+
+<div class="mul-cols">
+<div class="col">
 
 1. 计算对应点的轨迹 $(Track) \ t$
 2. 计算连通图 $G$（结点代表图片，边代表其之间有足够的匹配点）
@@ -337,6 +348,11 @@ $$
 5. 分解本质矩阵 $E$，得到两张图片摄像机的位姿（外参数）
 6. 三角化 $t \cap e$ 的点，作为初始化的重建结果
 7. 删除 $G$ 中的边 $e$
+
+</div>
+
+<div class="col">
+
 8. 如果 $G$ 中还有边：
     1. 从 $G$ 中选取 $e$ 满足 $track(e) \cap $已重建 3D 点 最大化
     2. 用 PnP 方法估计摄像机位姿（外参数）
@@ -345,7 +361,10 @@ $$
     5. 执行 Bundle Adjustment
 9. 结束
 
-</section>
+</div>
+
+</div>
+
 
 <!--s-->
 <!-- .slide: data-background="lec1/background.png" -->
@@ -384,6 +403,12 @@ compilation terminated.
 
 - 错误原因：在非 x86-64 架构的机器上，`cpuid.h` 文件不存在
 - 解决方法：注释 cpuid.h 那一行和有关 `internal_cpuid` 函数的代码，并直接返回 `false`
+
+<div class="fragment">
+
+<center><img src="lec1/pr.jpg" alt="pr"></center>
+
+</div>
 
 <!--v-->
 <!-- .slide: data-background="lec1/background.png" -->
