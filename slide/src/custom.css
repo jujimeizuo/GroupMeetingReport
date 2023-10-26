@@ -25,8 +25,14 @@
 }
 
 .reveal p, .reveal li, .reveal center {
-  font-size: 30px;
+  font-size: 28px;
 }
+
+.increment li {
+  /* line-height: 21px; */
+  font-size: 15px;
+}
+
 .reveal h1, .reveal h2, .reveal h3, .reveal h4 {
   font-weight: 700;
 }
