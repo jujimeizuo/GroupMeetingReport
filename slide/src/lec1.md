@@ -364,9 +364,11 @@ compilation terminated.
 
 ## 三维重建实例（城堡）
 
-<center><img src="lec1/sparse-point-cloud.jpg" alt="稠密点云"></center>
-
-
+<center>
+<video src="lec1/sparse-point-cloud.mov" controls>
+  alt="稠密点云"
+</video>
+</center>
 
 <!--s-->
 <!-- .slide: data-background="lec1/background.png" -->
