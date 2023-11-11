@@ -36,7 +36,7 @@ revealOptions:
 
 |主题|时间|课件|
 |:--|:--|:--|
-|MVG 理论基础 & SFM 代码复现|2023.10.31|[lec1](https://github.com/jujimeizuo/GroupMeetingReport/blob/master/slide/src/lec1.md)|
+|ORB-SLAM2 & SFM 理论基础|2023.11.14|[lec1](https://github.com/jujimeizuo/GroupMeetingReport/blob/master/slide/src/lec1.md)|
 
 
 </div>

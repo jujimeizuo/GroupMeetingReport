@@ -1,12 +1,11 @@
 ---
-title: MVG 理论基础 & SFM 代码复现
+title: SFM 理论基础 & openMVG 代码复现
 separator: <!--s-->
 verticalSeparator: <!--v-->
 theme: simple
-highlightTheme: monokai-sublime
+highlightTheme: github
 css: 
     - custom.css
-    - dark.css
 revealOptions:
     transition: 'slide'
     transitionSpeed: fast
@@ -15,252 +14,29 @@ revealOptions:
     width: 1000
 ---
 
-<!-- 
-复现一下基于SFM的代码（理论可以参考一下B站上 北京邮电大学 鲁鹏老师的三维重建的课程），然后月底的时候会进行一次汇报。汇报内容：掌握的多视图三维重建的理论基础、基于SFM的代码复现进度（如 openMVG等，第一阶段可以不需要后端优化的内容，只要能拿着几张视图可以恢复出相机的位姿以及恢复的稀疏点云即可）。
- -->
-
-
-<!-- .slide: data-background="lec1/cover.png" -->
-
-<!--v-->
-<!-- .slide: data-background="lec1/background.png" -->
-
-## 大纲
-
-- MVG 理论基础
-- SFM 基础内容
-- SFM 代码复现
-
-<!--s-->
-<!-- .slide: data-background="lec1/background.png" -->
-
 <div class="middle center">
 <div style="width: 100%">
 
-# Part.1 MVG 理论基础
+<img src="lec1/jiangnan_logo.png" style="margin-bottom: 1em" width="40%">
 
-
-</div>
-</div>
-
-
-<!--v-->
-<!-- .slide: data-background="lec1/background.png" -->
-
-## 基础知识
-
-- 齐次坐标
-- （齐次/非）线性方程组的最小二乘解
-- 变换
-
-<div class="three-line">
-
-| 变换     | 2D  | 3D  |
-| -------- | --- | --- |
-| 欧式变换 | 3   | 6   |
-| 相似变换 | 4   | 7   |
-| 仿射变换 | 6   | 12  |
-| 透视变换 | 8   | 15  |
-
-</div>
-
-
-<!--v-->
-<!-- .slide: data-background="lec1/background.png" -->
-
-## 摄像机几何
-
-- 像平面到像素平面：摄像机的投影矩阵 $M$ 使得 $P^\prime=MP$（11 DOF）
-- 摄像机偏斜：$M$ 中需要一个 $\theta$ 的矫正
-- 摄像机坐标系下的摄像机模型
-    - $P^\prime=MP=K[I \ \ 0]P$
-    - $K$ 为摄像机的内参数矩阵（5 DOF），内参数矩阵决定了摄像机坐标系下空间点到图像点的映射
-- 世界坐标系转到摄像机坐标系
-    - $P^\prime=K[R \ \ T]P_w=MP_w$
-    - $[R \ \ T]$ 为外参数矩阵（6 DOF）
-
-
-<!--v-->
-<!-- .slide: data-background="lec1/background.png" -->
-
-## 摄像机标定
-
-- 标定目标：从 1 张或多张图像中估算摄像机内、外参数矩阵
-- 标定问题：
-    - 世界坐标系中 $P_1, ..., P_n$ 位置已知
-    - 图像中 $p_1, ..., p_n$ 位置已知
-    - 计算摄像机内、外参数
-- 求解投影矩阵需要最少 6 对点对应
-- 径向畸变：枕形、桶形 $\lambda=1 \pm \sum_{p=1}^3 k_p d^{2p}$，$k_p$ 为畸变因子
-
-<!--v-->
-<!-- .slide: data-background="lec1/background.png" -->
-
-## 单视图几何
-
-- 无穷远点、无穷远线与无穷远平面
-- 影消点和影消线
-- 单视重构
-
-
-<!--v-->
-<!-- .slide: data-background="lec1/background.png" -->
-
-
-## 无穷远点、无穷远线与无穷远平面
-
-- 点在直线上：$x^\top l = 0$
-- 直线交点：$x = l \times l^\prime$
-- 点到点的变换：$p^\prime=Hp$
-- 线到线的变换：$l^\prime = H^{-\top}l$
-- 无穷远点：两条平行直线的交点 $l \times l^\prime = [b, -a, 0]^\top = x_\infty$，此点在欧式坐标中位于无穷远处。（透视没有无穷远点，仿射有无穷远点）
-- 无穷远线：无穷远点集位于的一条直线上 $l_\infty = [0,0,1]^\top$（透视没有无穷远线，仿射有无穷远线）
-- 无穷远平面
-    - 平行平面在无穷远处交于一条公共线，即无穷远直线
-    - 两条或多条无穷远直线的集合为无穷远平面
-
-
-<!--v-->
-<!-- .slide: data-background="lec1/background.png" -->
-
-## 影消点和影消线
-
-- 影消点
-    - 三维空间中的无穷远点在图像平面上的投影点
-    - 影消点与直线方向：$d$ = 直线方向 = $[a,b,c]^\top$，$v$ 为影消点，则 $v=Kd$
-- 影消线
-    - $l_{h}=H_p^{-\top}l_\infty$
-    - 图像中两条直线的交点如果在影消线上，则这两条线是 3D 空间中的平行线
-    - 影消线与平面法向量：$l_{h}$ 为影消线，$n$ 为平面法向量，$K$ 为摄像机内参数，则 $n=K^\top l_h$
-
-
-<!--v-->
-<!-- .slide: data-background="lec1/background.png" -->
-
-## 单视重构
-
-- 单视图恢复摄像机坐标系下的三维场景结构（场景的实际比例无法恢复）
-- 单视图标定
-    - 手动选择影消点影消线（利用无穷远处的点和线、面的垂直关系）
-    - 需要场景先验信息
-
-<!--v-->
-<!-- .slide: data-background="lec1/background.png" -->
-
-
-## 三维重建基础
-
-- 理想情况下 $P=l \times l^\prime$，但由于噪声的存在，两条直线通常不相交
-- 三角化
-    - 问题：已知 $p,p^\prime,K,K^\prime,R,T$，求解 $P$ 点的三维坐标
-    - 线性解法：求解超定齐次线性方程组（方程数 4 个，未知数 3 个）
-    - 非线性解法：寻找 $P$ 最小化 $d(p, MP)+d(p^\prime, M^\prime P)$
-    - 但实际应用中，摄像机的 $R,T$ 未知，甚至 $K,K^\prime$ 都未知
-- 多视图几何的关键问题
-    - 摄像机几何：从一张或者多张图像中求解摄像机的内、外参数
-    - 场景几何：通过二至多幅图寻找 3D 场景坐标
-    - 对应关系：已知一个图像中的 $p$ 点，如何在另外一个图像中找到 $p^\prime$ 点
-
-<!--v-->
-<!-- .slide: data-background="lec1/background.png" -->
-
-
-## 极几何
-
-- 极几何描述了同一场景或者物体的两个视点图像间的几何关系
-- 极平面、基线、极线、极点
-- 极几何约束：将搜索范围缩小到对应的极线上
-    - E 对规范化摄像机拍摄的两个视点图像间的极几何关系进行代数描述
-    - 本质矩阵 $E=T \times R = [T_\times] R$，使得 $p^{\prime \top}Ep=0$
-    - F 对一般透视摄像机拍摄的两个视点图像间的极几何关系进行代数描述
-    - 基础矩阵 $F=K^{\prime -\top}[T_\times]RK^{-1}$，使得 $p^{\prime \top}Fp=0$
-- 基础矩阵估计：归一化八点法
-- 单应矩阵：空间平面在两个摄像机下的投影几何 $H=K^\prime(R+tn_d^\top)K^{-1}$（要求场景中的点位于同一个平面，或者两个相机之间只有旋转而无平移）
-
-<!--v-->
-<!-- .slide: data-background="lec1/background.png" -->
-
-## 多视图几何
-
-### 运动恢复结构问题
-   
-- 已知
-    - $n$ 个三维点 $X_j(j=1,...,n)$ 在 $m$ 张图像中的对应点的像素坐标 $x_{ij}$
-    - $m$ 张图像对应的摄像机的内参数矩阵 $K_i(i=1,...,m)$
-    - $x_{ij}=M_iX_j=K_i[R_i \ \ T_i]X_j(i=1,...,m;j=1,...,n)$
-- 求解
-    - $n$ 个三维点 $X_j(j=1,...,n)$ 的坐标
-    - $m$ 个摄像机的外参数 $R_i$ 及 $T_i(i=1,...,m)$
-
-
-<!--v-->
-<!-- .slide: data-background="lec1/background.png" -->
-
-## 多视图几何
-
-### 三种典型的运动恢复结构任务
-
-- 欧式结构恢复（摄像机内参数已知，外参数未知）
-    1. 代数方法（求解基础矩阵、本质矩阵，分解本质矩阵）
-    2. 三角化
-- 仿射结构恢复（摄像机为仿射相机，内、外参数均未知）
-    1. 数据中心化
-    2. 因式分解获得运动与结构
-- 透视结构恢复（摄像机为透视相机，内、外参数均未知）
-    1. 代数方法（通过基础矩阵）
-    2. 捆绑调整（Bundle Adjustment，BA）
-
-<!--v-->
-<!-- .slide: data-background="lec1/background.png" -->
-
-## 捆绑调整（Bundle Adjustment，BA）
-
-- 恢复结构和运动的非线性方法，最小化重投影误差
-
-$$
-E(M,X)=\sum_{i=1}^m\sum_{j=1}^nD(x_{ij},M_iX_j)^2
-$$
-
-- 常用做 SFM 的最后一步，分解或代数方法可作为优化问题的初始解
-
-<!--v-->
-<!-- .slide: data-background="lec1/background.png" -->
-
-## PnP 问题
-
-- PnP 问题：通过世界中 N 个三维点坐标及其在图像中 N 个像点坐标，计算出相机或物体位姿的问题
-- P3P：N=3 的 PnP 问题
-    - 已知：摄像机内参数 K，像素平面上 a,b,c 点的像素坐标以及其对应的三维点 A,B,C 在世界坐标系中的世界坐标
-    - 求解：摄像机外参数 R,T
-
-<!--v-->
-<!-- .slide: data-background="lec1/background.png" -->
-
-## 模型拟合 RANSAC
-
-- 随机采用一致性 RANSAC：一种适用于数据收到异常值污染的模型拟合方法
-
-1. 随机均匀采样获取模型求解所需的最小子集
-2. 适用该子集估计模型参数
-3. 计算剩余样本与当前模型的一致性，统计满足当前模型的点（内点）的个数，作为当前模型分数
-4. 以设定的次数重复(1-3)，最终输出分数最高的模型
-
-<!--v-->
-<!-- .slide: data-background="lec1/background.png" -->
-
-## 特征提取 & 特征匹配
-
-### 特征提取 SIFT
-
-- 输入：图片
-- 输出：具有尺度不变性的特征点（位置+每个特征的 128 维数据描述）
+# SFM 理论基础 & openMVG 代码复现
 
 <hr/>
 
-### 特征匹配
+1. SFM 基础内容
+2. openMVG 代码复现
 
-- 找到距离其最近的特征点 $j_1$ 以及次近的特征点 $j_2$，并记录 $j_1,j_2$ 与特征点 $i$ 之间的距离为 $d_1,d_2$；
-- 计算距离比 $d_1/d_2$，如果小于某个阈值，则认为左图特征点 $i$ 与右图特征点 $j_1$ 是一对匹配点
+
+<!-- ←/→ Space Home End 翻页 -->
+
+
+<div style="text-align: right; margin-top: 2em;">
+<p>By冯则涛&emsp;2023.11.14&emsp;&emsp;&emsp;</p>
+</div>
+
+</div>
+</div>
+
 
 <!--s-->
 <!-- .slide: data-background="lec1/background.png" -->
@@ -268,7 +44,7 @@ $$
 <div class="middle center">
 <div style="width: 100%">
 
-# Part.2 SFM 基础内容
+# Part.1 SFM 基础内容
 
 </div>
 </div>
@@ -276,24 +52,39 @@ $$
 <!--v-->
 <!-- .slide: data-background="lec1/background.png" -->
 
-## SFM 系统问题描述（欧式重构）
+## SFM 系统问题描述
+
 
 - 已知：三维场景的 m 张图像以及每张图像对应的摄像机内参数矩阵 $K_i(i=1,...,m)$
 - 求解：
-    - 三维场景结构，即三维场景点坐标 $X_j(j=1,...,n)$；
-    - m 个摄像机的外参数 $R_i$ 及 $T_i$(i=1,...,m)
+    - 三维场景结构，即三维场景点坐标$X_j(j=1,...,n)$；
+    - m 个摄像机的外参数 $R_i$及$T_i(i=1,...,m)$
+    - 结合相机内参重建稀疏点云
 
+<center><img src="lec1/task.png" alt="sfm-task" width="50%"></center>
+
+<div align="center" style="color:red; font-size:15px">
+算法的关键<br>
+获得两张图片中的对应点，然后估计基础矩阵F、本质矩阵E，通过SVD分解求出较好的R,t，最后将多个稀疏点云融合在一起（BA）
+</div>
 
 <!--v-->
 <!-- .slide: data-background="lec1/background.png" -->
 
+
 ## SFM 系统（两视图）
 
-- 问题
-    - $x_{1j}=M_1X_j=K_1[I \ \ \ 0]X_j (j=1,...,n)$
-    - $x_{2j}=M_2X_j=K_2[R \ T]X_j (j=1,...,n)$
+<div class="mul-cols">
+<div class="col">
 
-<div class="fragment">
+- 问题
+    - $x_{1j}=M_1X_j=K_1[I \ \ \ 0]{\color{Red}X_j}$
+    - $x_{2j}=M_2X_j=K_2[{\color{Red}R \ T}]{\color{Red}X_j}$
+
+
+</div>
+
+<div class="col">
 
 - 求解步骤
     1. 对应点计算（SIFT 特征提取 + 近邻匹配）
@@ -302,28 +93,197 @@ $$
     4. 分解本质矩阵 $E \to R$、$T \to M_2$
     5. 三角化
 
+
 </div>
+
+</div>
+
+<center><img src="lec1/two-sence.jpg" alt="two-sence" width="80%"></center>
+
+<!--v-->
+<!-- .slide: data-background="lec1/background.png" -->
+
+## SIFT 特征提取
+
+1. 尺度空间极值检测：搜索所有尺度上的图像位置。通过高斯微分函数来识别潜在的对于尺度和旋转不变的兴趣点。
+2. 关键点定位：在每个候选的位置上，通过一个拟合精细的模型来确定位置和尺度。关键点的选择依据于它们的稳定程度。
+3. 方向确定：基于图像局部的梯度方向，分配给每个关键点位置一个或多个方向。所有后面的对图像数据的操作都相对于关键点的方向、尺度和位置进行变换，从而提供对于这些变换的不变性。
+4. 关键点描述：在每个关键点周围的邻域内，在选定的尺度上测量图像局部的梯度。这些梯度被变换成一种表示，这种表示允许比较大的局部形状的变形和光照变化。
+
+<div class="mul-cols">
+<div class="col">
+
+<center><img src="lec1/sift1.jpg" alt="sift1" width="80%"></center>
+
+</div>
+
+<div class="col">
+
+<center><img src="lec1/sift2.jpg" alt="sift2" width="100%"></center>
+
+</div>
+
+</div>
+
+
+<!--v-->
+<!-- .slide: data-background="lec1/background.png" -->
+
+## 特征匹配
+
+- 提取特征后，需要对特征进行匹配和建立track，图像对两两匹配，一般采用欧式距离：
+    - 暴力匹配，对特征点穷举计算距离
+    - 邻近搜索，建立kd-tree，邻域取值是关键
+
+<div class="mul-cols">
+<div class="col">
+
+对右图中的每特征点i在左图中：
+
+1. 找到距离其最近的特征点 $j_1$ 以及次近的特征点 $j_2$，并记录 $j_1,j_2$ 与特征点 $i$ 之间的距离为 $d_1,d_2$；
+2. 计算距离比 $d_1/d_2$，如果小于某个阈值，则认为左图特征点 $i$ 与右图特征点 $j_1$ 是一对匹配点
+
+</div>
+<div class="col">
+
+<center><img src="lec1/match.png" alt="two-sence" width="100%"></center>
+
+
+</div>
+
+</div>
+
+<!--v-->
+<!-- .slide: data-background="lec1/background.png" -->
+
+## 求解基础矩阵 F
+
+初步初选的匹配对可能还是不靠谱的，需要用几何约束去检测。
+
+F矩阵可以把两张图片之间的像素坐标联系起来，并包含相机的内参信息。每一个符合的匹配对像素坐标都需要满足：$x_1^\top F x_2=0$
+
+<center><img src="lec1/F.png" alt="F" width="50%"></center>
+
+<!--v-->
+<!-- .slide: data-background="lec1/background.png" -->
+
+## RANSAC 估计
+
+求出来的F矩阵计算出有很多噪声数据，需要用RANSAC进行滤波，用归一化八点法来进行RANSAC假设，剔除不满足基础矩阵的匹配对。
+
+<div class="mul-cols">
+<div class="col">
+
+1. 随机均匀采样八对点对
+2. 基于采样的八点对，使用八点法估计基础矩阵F
+3. 计算剩余点对是否满足当前点F，统计满足当前F的点的个数，作为F分数
+4. 重复1-3，直到达到最大迭代次数
+5. 输出分数最高的F
+
+</div>
+
+<div class="col">
+
+<center><img src="lec1/8points.png" alt="ransac1" width="70%"></center>
+
+</div>
+
+</div>
+
+<div class="mul-cols">
+<div class="col">
+
+<center><img src="lec1/ransac1.png" alt="ransac1" width="100%"></center>
+
+</div>
+
+<div class="col">
+
+<center><img src="lec1/ransac2.png" alt="ransac2" width="100%"></center>
+
+</div>
+
+</div>
+
+
+<!--v-->
+<!-- .slide: data-background="lec1/background.png" -->
+
+## 特征分解本质矩阵E
+
+基础矩阵F和本质矩阵的关系：$E=K_2^\top F K_1$，求出E之后通过SVD分解得到R和t。
+
+
+存在一个问题，给定一个本质矩阵$E=U diag(1,1,0)V^\top$和第一个相机矩阵$P_1=[I|0]$，求解第二个相机矩阵$P_2=[R|t]$，有四种解法：
+
+
+<div class="mul-cols">
+
+<div class="col">
+
+
+<center><img src="lec1/SVD.jpg" alt="SVD" width="100%"></center>
+
+
+</div>
+<div class="col">
+
+
+<center><img src="lec1/four1.png" alt="four1" width="100%"></center>
+
+</div>
+
+<div class="col">
+
+<center><img src="lec1/four2.png" alt="four1" width="100%"></center>
+
+
+</div>
+</div>
+
+选择$(X-C)\cdot R(3,:)^\top > 0$的对应的P2即可。这时候两幅图像的R,t均求得。
+
+<!--v-->
+<!-- .slide: data-background="lec1/background.png" -->
+
+## 点云融合 三角化 + 捆绑调整 BA
+
+得到R,t之后，通过三角化求解三维点$X_j$坐标。$X_j^*=\underset{X_j}{\argmin}(d(x_{1j},M_1X_j)+d(x_{2j},M_2X_j))$
+
+
+上面计算出的R,t和相机内参，可以恢复出物体的稀疏点云结构
+- 如果R,t是一个准确解，那么直接将各部分点云通过R,t变换到同一基准下就可以完成融合的过程
+- 如果R,t仍然不准确，那么需要通过BA优化R,t，然后再进行融合
+
+<div class="mul-cols">
+<div class="col">
+
+- BA 是一个非线性优化的过程，目的是使重建误差降到最低.
+- 通过调整POSE和三维点使反向投影误差最小化。
+- 如果相机没有标定，还应该将焦距也参与平差。
+
+</div>
+
+<div class="col">
+
+<center><img src="lec1/BA.jpg" alt="BA" width="70%"></center>
+
+</div>
+
+</div>
+
+
+
+多幅图像的计算方法，依次迭代上面的流程，求得比较准确的R,t后，即可进行点云的融合，到此完成稀疏点云的重建过程。
 
 <!--v-->
 <!-- .slide: data-background="lec1/background.png" -->
 
 ## 基于增量法的 SFM 系统（多视图）
 
-### 求解步骤
 
-<div class="fragment">
 
-1. 预处理
-    - 图像特征点提取与匹配
-    - 基于 RANSAC 的基础矩阵或单应矩阵估计
-
-</div>
-
-<div class="fragment">
-
-2. 增量法求解 SFM
-
-</div>
+<center><img src="lec1/openmvg.jpg" alt="openMVG" width="100%"></center>
 
 <!--v-->
 <!-- .slide: data-background="lec1/background.png" -->
@@ -336,7 +296,6 @@ $$
 
 <hr/>
 
-<div class="fragment">
 
 <div class="mul-cols">
 <div class="col">
@@ -361,7 +320,6 @@ $$
     5. 执行 Bundle Adjustment
 9. 结束
 
-</div>
 
 </div>
 
@@ -372,19 +330,11 @@ $$
 <div class="middle center">
 <div style="width: 100%">
 
-# Part.3 SFM 代码复现
+# Part.2 openMVG 代码复现
 
 
 </div>
 </div>
-
-<!--v-->
-<!-- .slide: data-background="lec1/background.png" -->
-
-## 运行环境
-
-- 虚拟机 Ubuntu 22.04 Arm64
-- openMVG+PMVS
 
 
 <!--v-->
@@ -411,40 +361,12 @@ compilation terminated.
 </div>
 
 <!--v-->
-<!-- .slide: data-background="lec1/background.png" -->
 
 ## 三维重建实例（城堡）
 
-1. OpenMVG提取稀疏点云
-
-```bash
-cd openMVG_Build/software/SfM/tutorial_demo.py
-python tutorial_demo.py
-```
-
-2. PMVS重建稠密点云、重建表面和纹理映射过程
-
-```bash
-# 把openMVG生成的SfM_Data转为适用于PMVS输入格式的文件
-cd tutorial_out/reconstruction_global/
-openMVG_main_openMVG2PMVS -i sfm_data.bin -o ./
-# 使用PMVS重建稠密点云、表面、纹理
-pmvs2 ./PMVS/ pmvs_options.txt
-```
-
-3. 用 MeshLab 查看生成的点云
-
-<!--v-->
-
-## 稀疏点云（城堡）
-
 <center><img src="lec1/sparse-point-cloud.jpg" alt="稠密点云"></center>
 
-<!--v-->
 
-## 稠密点云（城堡）
-
-<center><img src="lec1/dense-point-cloud.jpg" alt="稠密点云"></center>
 
 <!--s-->
 <!-- .slide: data-background="lec1/background.png" -->
@@ -454,9 +376,10 @@ pmvs2 ./PMVS/ pmvs_options.txt
 - 多视图几何
 - [计算机视觉之三维重建（深入浅出SfM与SLAM核心算法）](https://www.bilibili.com/video/BV1DQ4y1e7x6/?spm_id_from=333.788&vd_source=5e048b202705330980eefcc9a56cc5d0)
 - [使用openMVG+PMVS实现视觉三维重建](https://blog.yanjingang.com/?p=3329)
+- [SFM算法原理初简介](https://jiajiewu.gitee.io/post/tech/slam-sfm/sfm-intro/)
+- [sift算法原理](https://blog.csdn.net/u010440456/article/details/81483145)
 
 <!--s-->
-<!-- .slide: data-background="lec1/background.png" -->
 
 
 <div class="middle center">
