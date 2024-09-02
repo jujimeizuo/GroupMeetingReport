@@ -93,12 +93,12 @@
   text-align: center;
 }
 .reveal h2, .reveal h3 {
-  font-size: 48px;
+  font-size: 40px;
   border-bottom: 2px solid rgb(0, 63, 163);
-  padding-bottom: 20px;
+  padding-bottom: 10px;
 }
 .reveal h3 { font-size: 1.05em; }
-.reveal h4 { font-size: 0.75em; }
+.reveal h4 { font-size: 0.65em; }
 
 .reveal .center {
   text-align: center;
