@@ -161,12 +161,283 @@ revealOptions:
 
 <hr/>
 
+- 2.1
+- 2.2
+- 2.3 神经隐式 SLAM
+
 </div>
 </div>
 
 
 <!--v-->
 <!-- .slide: data-background="lec2/background-papers.png" -->
+
+
+<!--v-->
+<!-- .slide: data-background="lec2/background-papers.png" -->
+
+
+<!--v-->
+<!-- .slide: data-background="lec2/background-papers.png" -->
+
+
+<!--v-->
+<!-- .slide: data-background="lec2/background-papers.png" -->
+
+
+<!--v-->
+<!-- .slide: data-background="lec2/background-papers.png" -->
+
+
+<!--v-->
+<!-- .slide: data-background="lec2/background-papers.png" -->
+
+
+<!--v-->
+<!-- .slide: data-background="lec2/background-papers.png" -->
+
+
+<!--v-->
+<!-- .slide: data-background="lec2/background-papers.png" -->
+
+
+<!--v-->
+<!-- .slide: data-background="lec2/background-papers-nislam.png" -->
+
+## 2.3 神经隐式 SLAM
+
+```text
+神经隐式 SLAM 使用一个连续函数来表征图像或者三维 voxel，并用神经网络来逼近这个函数。
+这种方法可以直接从图像中重建三维场景，而不需要显式的特征提取和匹配。
+```
+
+<hr>
+
+<div class="mul-cols">
+<div class="col" style="margin-left: 60px">
+
+<a href="https://sites.cs.ucsb.edu/~lingqi/teaching/resources/GAMES101_Lecture_10.pdf">
+<img src="lec2/implicit.jpg" alt="implicit" width="100%">
+</a>
+
+</div>
+
+<div class="col" align="center">
+
+- 2.3.1 NeRF
+- 2.3.2 iMAP
+- 2.3.3 NICE-SLAM
+- 2.3.4 Co-SLAM
+- 2.3.5 DDN-SLAM
+- 2.3.6 NID-SLAM
+
+</div>
+
+</div>
+
+<!--v-->
+<!-- .slide: data-background="lec2/background-papers-nislam.png" -->
+
+## 2.3.1 NeRF
+
+<div class="reference">
+B. Mildenhall, P. P. Srinivasan, M. Tancik, J. T. Barron, R. Ramamoorthi, and R. Ng, “NeRF: Representing scenes as neural radiance fields for view synthesis,” in ECCV, 2020.
+</div>
+
+<hr>
+
+<div class="mul-cols">
+<div class="col">
+
+- 核心思想
+    - 一种 5D 神经辐射场的方法实现隐式场景表示
+    - 基于经典的体渲染的可微渲染的流程，包括一种分层采样策略
+    - 一种位置编码将 5D 坐标映射到高维空间
+
+</div>
+
+<div class="col">
+
+- 缺点
+    - 计算量大、耗时长、不能实时
+    - 只支持静态场景
+    - 需要足够数量不同视角下的图像
+    - 需要相机位姿
+
+
+</div>
+
+
+</div>
+
+<center>
+<img src="lec2/nerf.jpg" alt="NeRF" width="80%">
+</center>
+
+<!--v-->
+<!-- .slide: data-background="lec2/background-papers-nislam.png" -->
+
+## 2.3.2 iMAP
+
+<div class="reference">
+E. Sucar, S. Liu, J. Ortiz, and A. Davison, “iMAP: Implicit mapping and positioning in real-time,” in Proceedings of the international conference on computer vision (ICCV), 2021.
+</div>
+
+<hr>
+
+<div class="mul-cols">
+<div class="col">
+
+- 问题：将 MLP 作为实时 SLAM 系统中的场景表示
+
+<hr>
+
+- 核心思想
+    - 首个将隐式神经场景表示和 SLAM 结合的系统
+    - 实时地逐步训练隐式场景网络
+    - 关键帧选择策略和采样策略
+
+
+
+</div>
+
+<div class="col" align="center">
+
+- 缺点
+    - 不支持大场景
+    - 收敛速度慢
+    - 全局更新导致灾难性遗忘问题
+
+<div align="right">
+<img src="lec2/iMAP.jpg" alt="iMAP" width="100%">
+</div>
+
+</div>
+
+
+</div>
+
+
+
+<!--v-->
+<!-- .slide: data-background="lec2/background-papers-nislam.png" -->
+
+## 2.3.3 NICE-SLAM
+
+<div class="reference">
+Z. Zhu et al., “NICE-SLAM: Neural implicit scalable encoding for SLAM,” in Proceedings of the IEEE/CVF conference on computer vision and pattern recognition (CVPR), 2022.
+</div>
+
+
+<div class="mul-cols">
+<div class="col">
+
+- 问题：将神经隐式 SLAM 应用到大场景中
+- 核心思想
+  - <u>**基于网格的多层特征**</u>
+  - 采用三维栅格地图，每个栅格保存局部特征，用 decoder 将特征解码即可恢复出场景，因此即使场景面积很大也不存在网络遗忘问题
+  - 对 nosie 和未观测到位置具有鲁棒性，合理预测
+
+</div>
+
+<div class="col">
+
+- 缺点
+    - 无法全局 BA
+    - 动态场景下效果不佳
+- 启发和想法
+    - 动态物体的处理方法（采样得到的像素点 loss 会很大）
+    - 如果能全局 BA，精度会更高（Co-SLAM）
+
+</div>
+
+</div>
+
+<center>
+<img src="lec2/nice-slam.jpg" alt="nice-slam" width="65%">
+</center>
+
+
+
+<!--v-->
+<!-- .slide: data-background="lec2/background-papers-nislam.png" -->
+
+## 2.3.4 Co-SLAM
+
+<div class="reference">
+H. Wang, J. Wang, and L. Agapito, “Co-SLAM: Joint coordinate and sparse parametric encodings for neural real-time SLAM,” in CVPR, 2023.
+</div>
+
+
+<div class="mul-cols">
+<div class="col">
+
+- 问题：基于坐标的网络的重建会丢失细节，过于平滑；基于参数的网络难以填补空洞，二者结合
+- 核心思想
+    - 将联合坐标和参数编码结合，在 hashGrid 的多分辨率特征网络表征中使用 One-blob 编码，实现空洞补全
+    - <u>全局 BA，存储每个关键帧中像素子集 (5%)</u>
+
+</div>
+
+<div class="col" style="margin-right: 10px">
+
+- 缺点
+    - 无法应用在动态场景
+- 启发和想法
+    - 坐标网络和参数网络相结合，动态环境中可以填补被动态物体遮挡的区域
+    - 全局 BA 的方法
+
+</div>
+
+
+</div>
+
+<center>
+<img src="lec2/co-slam.jpg" alt="co-slam" width="70%">
+</center>
+
+<!--v-->
+<!-- .slide: data-background="lec2/background-papers-nislam.png" -->
+
+## 2.3.5 DDN-SLAM
+
+<div class="reference">
+M. Li, J. He, G. Jiang, and H. Wang, “Ddn-slam: Real-time dense dynamic neural implicit slam with joint semantic encoding,” arXiv preprint arXiv:2401.01545, 2024.
+</div>
+
+<hr>
+
+- 问题：神经隐式 SLAM 难以应用在动态场景、传统的动态语义 SLAM 将动态物体去除，导致空洞
+- 核心思想
+    - 神经隐式 + 语义 + 动态，区分前景和背景
+    - 利用特征的光流区分动态掩码，进行背景恢复
+    - 静态稀疏点云引导的采样策略，基于动态掩码的渲染损失
+
+
+<center>
+<img src="lec2/ddn-slam.jpg" alt="ddn-slam" width="60%">
+</center>
+
+<!--v-->
+<!-- .slide: data-background="lec2/background-papers-nislam.png" -->
+
+## 2.3.6 NID-SLAM
+
+<div class="reference">
+Z. Xu, J. Niu, Q. Li, T. Ren, and C. Chen, “Nid-slam: Neural implicit representation-based rgb-d slam in dynamic environments,” arXiv preprint arXiv:2401.01189, 2024.
+</div>
+
+<hr>
+
+- 问题：神经隐式 SLAM 难以应用在动态场景，传统的动态语义 SLAM 将动态物体去除，导致空洞
+- 核心思想
+    - 神经隐式 + 动态 + 语义
+    - 动态物体去除：深度修正、YOLO 语义分割潜在动态物体、利用以前的视点获得的静态信息进行背景修复
+    - 两种关键帧选择策略：覆盖、重叠
+
+<center>
+<img src="lec2/nid-slam.jpg" alt="nid-slam" width="70%">
+</center>
 
 
 
@@ -271,7 +542,7 @@ revealOptions:
 <img src="lec2/emollm.jpg" alt="emollm" width="100%">
 </a>
 
-用 GLM-4 微调心理相关数据集
+用 GLM4 为基座模型，XTuner 微调心理相关数据集
 
 </div>
 
