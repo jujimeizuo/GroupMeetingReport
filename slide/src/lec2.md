@@ -161,50 +161,337 @@ revealOptions:
 
 <hr/>
 
-- 2.1
-- 2.2
-- 2.3 神经隐式 SLAM
+- 2.1 动态 SLAM
+- 2.2 神经隐式 SLAM
+
+</div>
+</div>
+
+<!--v-->
+<!-- .slide: data-background="lec2/background-papers-dynamicslam.png" -->
+
+## 2.1 动态 SLAM
+
+```text
+SLAM 在静态环境中效果较好，但现实世界中大多是动态环境，存在一些问题，例如追踪、配准、
+建图 ...，会直接影响最终的结果，如何解决？
+```
+
+<hr>
+
+<div class="mul-cols">
+<div class="col">
+
+- 前端配准层面：动态点会影响配准精度
+- 建图层面：最终生成的地图存在大量动态物体的“鬼影”
+
+<div style="margin-left: 60px">
+
+<a href="https://www.zhihu.com/question/47817909">
+<img src="lec2/dynamic-slam-negative.webp" alt="dynamic-slam-negative" width="100%">
+</a>
+
+</div>
+</div>
+
+<div class="col" align="center">
+
+- 2.1.1 动态 SLAM 综述
+- 2.1.2 DynaSLAM
+- 2.1.3 DS-SLAM
+- 2.1.4 Detect-SLAM
+- 2.1.5 Crowd-SLAM
+- 2.1.6 FlowFusion
+- 2.1.7 RigidFusion
+
+</div>
+
+
+</div>
+
+<!--v-->
+<!-- .slide: data-background="lec2/background-papers-dynamicslam.png" -->
+
+## 2.1.1 动态 SLAM 综述
+
+<div class="reference">
+M. R. U. Saputra, A. Markham, and N. Trigoni, “Visual SLAM and structure from motion in dynamic environments: A survey,” ACM Computing Surveys (CSUR), vol. 51, no. 2, pp. 1–36, 2018.
+</div>
+
+<hr>
+
+<div class="mul-cols">
+<div class="col">
+
+
+- 涵盖三个主要问题
+    - 如何做好鲁棒 VSLAM？
+    - 如何在 3D 中分割和跟踪动态物体？
+    - 如何实现联合运动分割和重建？
+- 两个角度看：
+    1. **作为一个鲁棒性问题**：相机前的动态物体导致错误的对应关系（遮挡等），可以通过分割图像中静态和动态特征，将动态部分视为异常值来实现鲁棒性，只用静态部分计算姿态估计。
+    2. **作为一个标准 VSLAM 在动态环境中的扩展**：将跟踪的特征分割成不同的簇，可以重建每个物体结构（形状）并跟踪轨迹，甚至可以将动态物体插入静态地图中。
+
+
+</div>
+
+
+<div class="col">
+<div class="fragment">
+
+- 大致三种思路：
+    1. 排除动态特征来构建静态地图
+    2. 提取动态物体而忽略静态背景
+    3. 试图同时处理世界中静态和动态的组成成分
+
+<hr>
+
+<center>
+<a href="https://blog.jujimeizuo.cn/2024/05/27/Visual-SLAM-and-SfM-in-Dynamic-Environments-A-Survey/">
+<img src="lec2/dynamic-slam-survey.jpg" alt="dynamic-slam-survey" width="100%">
+</a>
+</center>
+
+</div>
+</div>
+
+
+</div>
+
+
+
+
+<!--v-->
+<!-- .slide: data-background="lec2/background-papers-dynamicslam.png" -->
+
+## 2.1.2 DynaSLAM
+
+<div class="reference">
+F. Bescos Berta and J. Neira, “DynaSLAM: Tracking, mapping and inpainting in dynamic environments,” IEEE RA-L, 2018.
+</div>
+
+<hr>
+
+<div class="mul-cols">
+<div class="col">
+
+- 问题：基于特征的 SLAM 没有解决场景中场景的动态物体问题，例如行人、自行车、汽车等
+
+<hr>
+
+- 启发和想法：多视图几何的方法可以弥补深度学习的缺陷
+
+</div>
+
+<div class="col">
+
+- 核心思想
+    - 深度学习 + 多视图几何
+    - 使用 Mask R-CNN 进行像素级分割，只用到语义信息
+    - Mask R-CNN 只能分割出先验的动态物体，但不能找到那些“可以被移动”的物体，采用多视图几何的方法
+
+
+</div>
+
+</div>
+
+<div align="center">
+<a href="https://note.jujimeizuo.cn/cv/slam/dynaslam/">
+<img src="lec2/dynaslam.png" alt="dynaslam" width="100%">
+</a>
+</div>
+
+<!--v-->
+<!-- .slide: data-background="lec2/background-papers-dynamicslam.png" -->
+
+## 2.1.3 DS-SLAM
+
+<div class="reference">
+Chao Yu, Zuxin Liu, Xinjun Liu, Fugui Xie, Yi Yang, Qi Wei, Fei Qiao "DS-SLAM: A Semantic Visual SLAM towards Dynamic Environments." Published in the Proceedings of the 2018 IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS 2018).
+</div>
+
+
+<hr>
+
+<div class="mul-cols">
+
+<div class="col">
+
+- 问题：一方面，难以处理动态或粗糙的环境，另一方面，地图模型通常基于几何信息，如地标和点云地图，不提供对周围环境的高级理解
+
+<hr>
+
+- 启发和想法：光流法的不一致性区分静态和动态
+
+</div>
+<div class="col">
+
+- 核心思想
+    - 语义分割 + 光流处理动态物体
+    - 运动一致性检验，通过计算光流的不一致性来区分静态背景和动态物体，与语义分割相结合
+    - 构建了一个语义 3D 八叉树地图
+
+</div>
+
+</div>
+
+<div align="center">
+<a href="https://note.jujimeizuo.cn/cv/slam/ds-slam">
+
+<div class="mul-cols">
+<div class="col">
+
+<img src="lec2/ds-slam1.jpg" alt="ds-slam1" width="100%">
+
+</div>
+
+<div class="col">
+
+<img src="lec2/ds-slam2.jpg" alt="ds-slam2" width="100%">
+
+</div>
+</div>
+
+</a>
+</div>
+
+
+<!--v-->
+<!-- .slide: data-background="lec2/background-papers-dynamicslam.png" -->
+
+## 2.1.4 Detect-SLAM
+
+<div class="reference">
+F. Zhong, S. Wang, Z. Zhang, C. Chen, and Y. Wang, “Detect-SLAM: Making object detection and SLAM mutually beneficial,” in 2018 IEEE winter conference on applications of computer vision (WACV), 2018, pp. 1001–1010. doi: 10.1109/WACV.2018.00115.
+</div>
+
+<hr>
+
+<div class="mul-cols">
+<div class="col">
+
+- 问题：SLAM 容易在动态环境中失败，基于图像的目标检测对变化的视点、遮挡很敏感。SLAM 和对象检测器是否可以集成到一个系统中，相互共享几何信息和语义理解？
+- 核心思想
+    - SLAM 和 DNN 的目标检测相结合
+    - 针对语义信息的时延，提出一种实时传播每个关键点的移动概率方法
+    - 如果逐帧使用目标检测，系统速度跟不上，有两种策略
+        1. 仅在关键帧中做目标检测
+        2. 位姿估计前，通过传播运动概率，去除动态物体上提取的特征
+
+</div>
+
+<div class="col" align="center" style="margin-top: 50px">
+
+<a href="https://note.jujimeizuo.cn/cv/slam/detect-slam/">
+<img src="lec2/detect-slam.jpg" alt="detect-slam" width="100%">
+</a>
+</div>
+
+</div>
+
+
+
+<!--v-->
+<!-- .slide: data-background="lec2/background-papers-dynamicslam.png" -->
+
+## 2.1.5 Crowd-SLAM
+
+<div class="reference">
+G. Soares J. C. V. and M. A. Meggiolaro, “Crowd-SLAM: Visual SLAM towards crowded environments using object detection,” Journal of Intelligent & Robotic Systems, vol. 102, no. 50, 2021, doi: https://doi.org/10.1007/s10846-021-01414-1.
+</div>
+
+<div class="mul-cols">
+<div class="col">
+
+<hr>
+
+- 问题：SLAM 在拥挤人群场景的解决方案
+- 核心思想
+    - 动态 SLAM + 目标检测（YOLO）
+    - 边界框内的关键点全部视为外点，检查过滤区域并更新特征点数量
+- 缺点
+    - 人物占据图像大部分区域，导致特征耗尽
+    - 不过滤人之外的动态物体
+
+</div>
+
+<div class="col" align="center" style="margin-top: 50px">
+
+<a href="https://note.jujimeizuo.cn/cv/slam/crowd-slam/">
+<img src="lec2/crowd-slam.jpg" alt="crowd-slam" width="100%">
+</a>
 
 </div>
 </div>
 
 
 <!--v-->
-<!-- .slide: data-background="lec2/background-papers.png" -->
+<!-- .slide: data-background="lec2/background-papers-dynamicslam.png" -->
 
+## 2.1.6 FlowFusion
+
+
+<div class="reference">
+T. Zhang, H. Zhang, Y. Li, Y. Nakamura, and L. Zhang, “FlowFusion: Dynamic dense RGB-d SLAM based on optical flow,” in 2020 IEEE international conference on robotics and automation (ICRA), 2020, pp. 7322–7328. doi: 10.1109/ICRA40945.2020.9197349.
+</div>
+
+
+<div class="mul-cols">
+
+<div class="col">
+
+- 问题：动态环境使得无法提取足够多的静态视觉特征，导致特征关联不足，从而导致相机位姿估计失败
+
+<hr>
+
+- 启发和想法
+    - 场景流是一个值得借鉴的思路
+
+</div>
+
+<div class="col">
+
+- 核心思想
+    - PWC-net 进行稠密光流计算
+    - 一种基于光流残差的动态分割和密集融合 RGB-D SLAM 方案
+    - 定义光流残差为投影的 2D 场景流，即表示为动态区域
+    - 由位姿、光流计算场景流（仅由物体运动产生的流）：<b style="font-size: 13px">2D scene flow = optical flow - ego flow</b>
+
+</div>
+
+</div>
+
+<div align="center">
+<a href="https://note.jujimeizuo.cn/cv/slam/flowfusion/">
+<img src="lec2/flowfusion.jpg" alt="flowfusion" width="90%">
+</a>
+</div>
 
 <!--v-->
-<!-- .slide: data-background="lec2/background-papers.png" -->
+<!-- .slide: data-background="lec2/background-papers-dynamicslam.png" -->
+
+## 2.1.7 RigidFusion
+
+<div class="reference">
+R. Long, C. Rauch, T. Zhang, V. Ivan, and S. Vijayakumar, “RigidFusion: Robot localisation and mapping in environments with large dynamic rigid objects,” IEEE Robotics and Automation Letters, vol. 6, no. 2, pp. 3703–3710, Apr. 2021, doi: 10.1109/LRA.2021.3066375.
+</div>
+
+- 问题：在较大动态遮挡（超过 65%）的情况下改善定位，减少场景的模糊性
+- 核心思想
+    - 将动态部件视为单个刚体，利用**运动先验**分割动态部件和静态部件
+    - 利用分割后的图像分别对静态部件和动态部件重建
 
 
-<!--v-->
-<!-- .slide: data-background="lec2/background-papers.png" -->
-
-
-<!--v-->
-<!-- .slide: data-background="lec2/background-papers.png" -->
-
-
-<!--v-->
-<!-- .slide: data-background="lec2/background-papers.png" -->
-
-
-<!--v-->
-<!-- .slide: data-background="lec2/background-papers.png" -->
-
-
-<!--v-->
-<!-- .slide: data-background="lec2/background-papers.png" -->
-
-
-<!--v-->
-<!-- .slide: data-background="lec2/background-papers.png" -->
-
+<div align="center">
+<a href="https://note.jujimeizuo.cn/cv/slam/rigidfusion/">
+<img src="lec2/rigidfusion.jpg" alt="rigid" width="100%">
+</a>
+</div>
 
 <!--v-->
 <!-- .slide: data-background="lec2/background-papers-nislam.png" -->
 
-## 2.3 神经隐式 SLAM
+## 2.2 神经隐式 SLAM
 
 ```text
 神经隐式 SLAM 使用一个连续函数来表征图像或者三维 voxel，并用神经网络来逼近这个函数。
@@ -224,12 +511,12 @@ revealOptions:
 
 <div class="col" align="center">
 
-- 2.3.1 NeRF
-- 2.3.2 iMAP
-- 2.3.3 NICE-SLAM
-- 2.3.4 Co-SLAM
-- 2.3.5 DDN-SLAM
-- 2.3.6 NID-SLAM
+- 2.2.1 NeRF
+- 2.2.2 iMAP
+- 2.2.3 NICE-SLAM
+- 2.2.4 Co-SLAM
+- 2.2.5 DDN-SLAM
+- 2.2.6 NID-SLAM
 
 </div>
 
@@ -238,7 +525,7 @@ revealOptions:
 <!--v-->
 <!-- .slide: data-background="lec2/background-papers-nislam.png" -->
 
-## 2.3.1 NeRF
+## 2.2.1 NeRF
 
 <div class="reference">
 B. Mildenhall, P. P. Srinivasan, M. Tancik, J. T. Barron, R. Ramamoorthi, and R. Ng, “NeRF: Representing scenes as neural radiance fields for view synthesis,” in ECCV, 2020.
@@ -277,7 +564,7 @@ B. Mildenhall, P. P. Srinivasan, M. Tancik, J. T. Barron, R. Ramamoorthi, and R.
 <!--v-->
 <!-- .slide: data-background="lec2/background-papers-nislam.png" -->
 
-## 2.3.2 iMAP
+## 2.2.2 iMAP
 
 <div class="reference">
 E. Sucar, S. Liu, J. Ortiz, and A. Davison, “iMAP: Implicit mapping and positioning in real-time,” in Proceedings of the international conference on computer vision (ICCV), 2021.
@@ -308,8 +595,11 @@ E. Sucar, S. Liu, J. Ortiz, and A. Davison, “iMAP: Implicit mapping and positi
     - 收敛速度慢
     - 全局更新导致灾难性遗忘问题
 
+
 <div align="right">
+<a href="https://note.jujimeizuo.cn/cv/slam/imap/">
 <img src="lec2/iMAP.jpg" alt="iMAP" width="100%">
+</a>
 </div>
 
 </div>
@@ -322,7 +612,7 @@ E. Sucar, S. Liu, J. Ortiz, and A. Davison, “iMAP: Implicit mapping and positi
 <!--v-->
 <!-- .slide: data-background="lec2/background-papers-nislam.png" -->
 
-## 2.3.3 NICE-SLAM
+## 2.2.3 NICE-SLAM
 
 <div class="reference">
 Z. Zhu et al., “NICE-SLAM: Neural implicit scalable encoding for SLAM,” in Proceedings of the IEEE/CVF conference on computer vision and pattern recognition (CVPR), 2022.
@@ -354,7 +644,9 @@ Z. Zhu et al., “NICE-SLAM: Neural implicit scalable encoding for SLAM,” in P
 </div>
 
 <center>
+<a href="https://note.jujimeizuo.cn/cv/slam/nice-slam/">
 <img src="lec2/nice-slam.jpg" alt="nice-slam" width="65%">
+</a>
 </center>
 
 
@@ -362,7 +654,7 @@ Z. Zhu et al., “NICE-SLAM: Neural implicit scalable encoding for SLAM,” in P
 <!--v-->
 <!-- .slide: data-background="lec2/background-papers-nislam.png" -->
 
-## 2.3.4 Co-SLAM
+## 2.2.4 Co-SLAM
 
 <div class="reference">
 H. Wang, J. Wang, and L. Agapito, “Co-SLAM: Joint coordinate and sparse parametric encodings for neural real-time SLAM,” in CVPR, 2023.
@@ -393,13 +685,15 @@ H. Wang, J. Wang, and L. Agapito, “Co-SLAM: Joint coordinate and sparse parame
 </div>
 
 <center>
+<a href="https://note.jujimeizuo.cn/cv/slam/co-slam/">
 <img src="lec2/co-slam.jpg" alt="co-slam" width="70%">
+</a>
 </center>
 
 <!--v-->
 <!-- .slide: data-background="lec2/background-papers-nislam.png" -->
 
-## 2.3.5 DDN-SLAM
+## 2.2.5 DDN-SLAM
 
 <div class="reference">
 M. Li, J. He, G. Jiang, and H. Wang, “Ddn-slam: Real-time dense dynamic neural implicit slam with joint semantic encoding,” arXiv preprint arXiv:2401.01545, 2024.
@@ -415,13 +709,15 @@ M. Li, J. He, G. Jiang, and H. Wang, “Ddn-slam: Real-time dense dynamic neural
 
 
 <center>
+<a href="https://note.jujimeizuo.cn/cv/slam/ddn-slam/">
 <img src="lec2/ddn-slam.jpg" alt="ddn-slam" width="60%">
+</a>
 </center>
 
 <!--v-->
 <!-- .slide: data-background="lec2/background-papers-nislam.png" -->
 
-## 2.3.6 NID-SLAM
+## 2.2.6 NID-SLAM
 
 <div class="reference">
 Z. Xu, J. Niu, Q. Li, T. Ren, and C. Chen, “Nid-slam: Neural implicit representation-based rgb-d slam in dynamic environments,” arXiv preprint arXiv:2401.01189, 2024.
@@ -436,7 +732,9 @@ Z. Xu, J. Niu, Q. Li, T. Ren, and C. Chen, “Nid-slam: Neural implicit represen
     - 两种关键帧选择策略：覆盖、重叠
 
 <center>
+<a href="https://note.jujimeizuo.cn/cv/slam/nid-slam/">
 <img src="lec2/nid-slam.jpg" alt="nid-slam" width="70%">
+</a>
 </center>
 
 
