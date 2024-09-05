@@ -56,7 +56,7 @@
 }
 
 .reveal ul {
-  margin: 0 0 0 1.5em
+  margin: 0 0 0 1.5em;
 }
 .reveal ol {
   margin: 0 0 0 2em;
@@ -67,10 +67,10 @@
 .reveal li + li {
   margin-top: 10px;
 }
-.reveal ul {
+/* .reveal ul {
   display: block;
   margin-right: 15px;
-}
+} */
 
 .reveal h1,
 .reveal h2,
@@ -92,13 +92,13 @@
 .reveal .middle h1 {
   text-align: center;
 }
-.reveal h2 {
-  font-size: 48px;
+.reveal h2, .reveal h3 {
+  font-size: 40px;
   border-bottom: 2px solid rgb(0, 63, 163);
-  padding-bottom: 20px;
+  padding-bottom: 10px;
 }
-.reveal h3 { font-size: 1.15em; }
-.reveal h4 { font-size: 1.05em; }
+.reveal h3 { font-size: 1.05em; }
+.reveal h4 { font-size: 0.65em; }
 
 .reveal .center {
   text-align: center;
@@ -201,7 +201,7 @@ html.print-pdf .reveal pre code {
 }
 
 .reveal .heti-spacing {
-  font-size: 0.5em;
+  font-size: .5em;
   vertical-align: top;
 }
 
@@ -236,4 +236,11 @@ html.print-pdf .reveal pre code {
 
 .katex {
   font-size: 1em;
+}
+
+.reference {
+  font-family: 'Times New Roman';
+  font-style: italic;
+  font-size: 13px;
+  padding:  0 30px;
 }

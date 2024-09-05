@@ -17,7 +17,7 @@ revealOptions:
 <div class="middle center">
 <div style="width: 100%">
 
-<img src="lec1/jiangnan_logo.png" style="margin-bottom: 1em" width="40%">
+<img src="lec2/jiangnan_logo.png" style="margin-bottom: 1em" width="40%">
 
 # First-year Master Learning
 
