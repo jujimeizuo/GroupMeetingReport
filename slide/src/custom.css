@@ -244,3 +244,11 @@ html.print-pdf .reveal pre code {
   font-size: 13px;
   padding:  0 30px;
 }
+
+.box {
+  display: inline-block;
+  border: 2px solid black;
+  padding: 2px;
+  margin: 10px;
+  box-sizing: border-box;
+}
