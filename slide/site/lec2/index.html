@@ -151,6 +151,13 @@
 
 #### 1.3.1 体绘制
 
+- 直接将三维图像的体素点通过一定的透明度叠加计算后直接对屏幕上的像素点着色。
+- 特点：体数据内部更细节
+- 缺点：复杂度较大
+
+
+<div class="fragment">
+
 <div class="mul-cols">
 <div class="col">
 
@@ -182,17 +189,64 @@
 
 </div>
 
+<div class="col">
+
+<hr>
+
+<center>
+<img src="lec2/3dv-1.png" alt="" width="100%">
+</center>
 
 </div>
+
+
+
+</div>
+
+</div>
+
+</script></section><section data-markdown><script type="text/template">
+<!-- .slide: data-background="lec2/background-books.png" -->
+
+## 1.3 三维数据场可视化
 
 #### 1.3.2 面绘制
 
+- 想显示三维图像中的内容，可以对这个“内容”的表面建立一个三角形网格模型
+- 首先建立网格模型，之后渲染网格
 
-<a  href="https://note.jujimeizuo.cn/cv/3d-visualization/">
+<hr>
+
+<div class="fragment">
+
+<div class="mul-cols">
+<div class="col">
+
+<hr>
+
+- `Marching Cubes` 算法，和神经网络结合，从三维数据中提取出网格模型，并可以选择性地为网格顶点赋予颜色
+- 比如在 NeRF 中使用该算法提取 mesh，实现模型的显示化
+
+
+</div>
+
+<div class="col">
+
+<center>
+<img src="lec2/3dv-2.png" alt="marching-cubes" width="100%">
+</center>
+
+</div>
+
+</div>
+
+</div>
+
+<!-- <a  href="https://note.jujimeizuo.cn/cv/3d-visualization/">
 <div class="box" style="float: right; margin-right: 30px">
 笔记链接
 </div>
-</a>
+</a> -->
 
 </script></section></section><section ><section data-markdown><script type="text/template">
 <!-- .slide: data-background="lec2/background-papers.png" -->
